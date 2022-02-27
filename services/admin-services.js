@@ -1,17 +1,21 @@
-const { Restaurant, User, Category } = require('../../models')
-const { imgurFileHandler } = require('../../helpers/file-helpers')
-const adminServices = require('../../services/admin-services')
-
+const { Restaurant, User, Category } = require('../models')
+const { imgurFileHandler } = require('../helpers/file-helpers')
 const adminController = {
-  getRestaurants: (req, res, next) => {
-    adminServices.getRestaurants(req, (err, data) => err ? next(err) : res.render('admin/restaurants', data))
+  getRestaurants: (req, cb) => {
+    Restaurant.findAll({
+      raw: true,
+      nest: true,
+      include: [Category]
+    })
+      .then(restaurants => cb(null, { restaurants }))
+      .catch(err => cb(err))
   },
-  createRestaurant: (req, res, next) => {
+  createRestaurant: (req, cb) => {
     return Category.findAll({
       raw: true
     })
-      .then(categories => res.render('admin/create-restaurant', { categories }))
-      .catch(err => next(err))
+      .then(categories => cb(null, { categories }))
+      .catch(err => cb(err))
   },
   postRestaurant: (req, res, next) => {
     const { name, tel, address, openingHours, description, categoryId } = req.body // 從 req.body 拿出表單裡的資料
