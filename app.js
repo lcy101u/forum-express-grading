@@ -1,6 +1,7 @@
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
+const cors = require('cors')
 const path = require('path')
 const express = require('express')
 const handlebars = require('express-handlebars')
@@ -21,6 +22,7 @@ app.engine('hbs', handlebars({ extname: '.hbs', helpers: handlebarsHelpers }))
 
 // 設定使用 Handlebars 做為樣板引擎
 app.set('view engine', 'hbs')
+app.use(cors())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(session({ secret: SESSION_SECRET, resave: false, saveUninitialized: false }))
