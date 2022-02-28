@@ -10,14 +10,7 @@ const adminController = {
       .then(restaurants => cb(null, { restaurants }))
       .catch(err => cb(err))
   },
-  createRestaurant: (req, cb) => {
-    return Category.findAll({
-      raw: true
-    })
-      .then(categories => cb(null, { categories }))
-      .catch(err => cb(err))
-  },
-  postRestaurant: (req, res, next) => {
+  postRestaurant: (req, cb) => {
     const { name, tel, address, openingHours, description, categoryId } = req.body // 從 req.body 拿出表單裡的資料
     if (!name) throw new Error('Restaurant name is required!') // name 是必填，若發先是空值就會終止程式碼，並在畫面顯示錯誤提示
     const { file } = req // 把檔案取出來，也可以寫成 const file = req.file
@@ -31,11 +24,24 @@ const adminController = {
         image: filePath || null,
         categoryId
       }))
-      .then(() => {
-        req.flash('success_messages', 'restaurant was successfully created')
-        res.redirect('/admin/restaurants')
+      .then(newRestaurant => { cb(null, { restaurant: newRestaurant }) })
+      .catch(err => cb(err))
+  },
+  deleteRestaurant: (req, cb) => {
+    return Restaurant.findByPk(req.params.id)
+      .then(restaurant => {
+        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        return restaurant.destroy()
       })
-      .catch(err => next(err))
+      .then(deletedRestaurant => cb(null, { deletedRestaurant }))
+      .catch(err => cb(err))
+  },
+  createRestaurant: (req, cb) => {
+    return Category.findAll({
+      raw: true
+    })
+      .then(categories => cb(null, { categories }))
+      .catch(err => cb(err))
   },
   getRestaurant: (req, res, next) => {
     Restaurant.findByPk(req.params.id, { // 去資料庫用 id 找一筆資料
@@ -84,15 +90,6 @@ const adminController = {
         req.flash('success_messages', 'restaurant was successfully to update')
         res.redirect('/admin/restaurants')
       })
-      .catch(err => next(err))
-  },
-  deleteRestaurant: (req, res, next) => {
-    return Restaurant.findByPk(req.params.id)
-      .then(restaurant => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
-        return restaurant.destroy()
-      })
-      .then(() => res.redirect('/admin/restaurants'))
       .catch(err => next(err))
   },
   getUsers: (req, res, next) => {
